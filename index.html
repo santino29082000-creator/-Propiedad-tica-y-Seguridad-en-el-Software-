@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario: Propiedad, Ética y Seguridad en el Software</title>
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --card: #ffffff;
+            --primary: #1a56db;
+            --primary-light: #e8effd;
+            --success: #057a55;
+            --success-bg: #e6f5ee;
+            --error: #c81e1e;
+            --error-bg: #fde8e8;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            padding: 16px;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        /* HEADER / PROGRESO */
+        #header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1a56db 100%);
+            padding: 20px 28px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .progress-info span:last-child {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .progress-bar-outer {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            overflow: hidden;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            width: 0%;
+            background: #ffffff;
+            border-radius: 50px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+        }
+
+        /* PANTALLAS */
+        .pantalla {
+            padding: 32px 28px;
+            display: none;
+        }
+        .pantalla.activa {
+            display: block;
+            animation: fadeSlide 0.4s ease;
+        }
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* BIENVENIDA */
+        #pantalla-bienvenida {
+            text-align: center;
+            padding: 48px 28px;
+        }
+        #pantalla-bienvenida .icono {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+        }
+        #pantalla-bienvenida h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+        #pantalla-bienvenida p {
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+            font-size: 1rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.3px;
+            text-decoration: none;
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(26, 86, 219, 0.3);
+        }
+        .btn:hover {
+            background: #1747b3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(26, 86, 219, 0.4);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-outline {
+            background: #fff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+            box-shadow: 0 4px 14px rgba(26, 86, 219, 0.2);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(30%);
+        }
+
+        /* PREGUNTA */
+        #pantalla-quiz {
+            padding-top: 16px;
+        }
+        .pregunta-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .pregunta-numero {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.9rem;
+            padding: 6px 14px;
+            border-radius: 30px;
+            white-space: nowrap;
+        }
+        .pregunta-enunciado {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .opcion {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 18px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #fafbfc;
+            position: relative;
+        }
+        .opcion:hover:not(.bloqueada) {
+            border-color: #93b4f5;
+            background: #f0f5ff;
+            transform: translateX(4px);
+        }
+        .opcion.bloqueada {
+            cursor: default;
+            pointer-events: none;
+        }
+        .opcion .letra {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #475569;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        .opcion .texto {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+        .opcion.correcta {
+            border-color: var(--success) !important;
+            background: var(--success-bg) !important;
+        }
+        .opcion.correcta .letra {
+            background: var(--success) !important;
+            color: #fff !important;
+        }
+        .opcion.incorrecta {
+            border-color: var(--error) !important;
+            background: var(--error-bg) !important;
+        }
+        .opcion.incorrecta .letra {
+            background: var(--error) !important;
+            color: #fff !important;
+        }
+        .opcion.revelada-correcta {
+            border-color: var(--success) !important;
+            background: #f0fdf4 !important;
+            border-style: dashed !important;
+        }
+        .feedback {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            animation: fadeSlide 0.3s ease;
+        }
+        .feedback.correcto {
+            background: var(--success-bg);
+            border-left: 5px solid var(--success);
+            color: #065f46;
+        }
+        .feedback.incorrecto {
+            background: var(--error-bg);
+            border-left: 5px solid var(--error);
+            color: #7f1d1d;
+        }
+        .feedback .titulo-feedback {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .feedback .justificacion {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .navegacion {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .navegacion .btn {
+            padding: 12px 28px;
+            font-size: 0.9rem;
+        }
+
+        /* RESULTADOS */
+        #pantalla-resultado {
+            text-align: center;
+            padding: 40px 28px;
+        }
+        .resultado-circulo {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(#1a56db 0deg, #e2e8f0 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+        .resultado-circulo::before {
+            content: '';
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        .resultado-porcentaje {
+            position: relative;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e3a8a;
+            z-index: 1;
+        }
+        .resultado-detalle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        .lista-resumen {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .item-resumen {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            color: #64748b;
+            cursor: default;
+        }
+        .item-resumen.acierto {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .item-resumen.fallo {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .item-resumen.sin-responder {
+            background: #f1f5f9;
+            color: #94a3b8;
+        }
+        #btnReiniciar {
+            margin-top: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .pantalla {
+                padding: 20px 16px;
+            }
+            #pantalla-bienvenida {
+                padding: 32px 16px;
+            }
+            #pantalla-bienvenida h1 {
+                font-size: 1.4rem;
+            }
+            .opcion {
+                padding: 12px 14px;
+            }
+            .navegacion .btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+            .pregunta-enunciado {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- HEADER CON BARRA DE PROGRESO -->
+        <div id="header">
+            <div class="progress-info">
+                <span>📊 Progreso de la práctica</span>
+                <span id="progressText">0 / 20 respondidas</span>
+            </div>
+            <div class="progress-bar-outer">
+                <div class="progress-bar-inner" id="progressBar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA BIENVENIDA -->
+        <div id="pantalla-bienvenida" class="pantalla activa">
+            <div class="icono">⚖️💻</div>
+            <h1>Propiedad, Ética y Seguridad en el Software</h1>
+            <p>Modo práctica con retroalimentación inmediata. Lee cada pregunta, selecciona una opción y recibe la justificación técnica al instante. Las preguntas y opciones se ordenan aleatoriamente en cada intento.</p>
+            <button class="btn" id="btnComenzar">🚀 Iniciar Práctica</button>
+        </div>
+
+        <!-- PANTALLA QUIZ -->
+        <div id="pantalla-quiz" class="pantalla">
+            <div id="contenedor-pregunta"></div>
+            <div id="contenedor-feedback"></div>
+            <div class="navegacion">
+                <button class="btn btn-outline" id="btnAnterior">⬅ Anterior</button>
+                <button class="btn" id="btnSiguiente">Siguiente ➡</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA RESULTADO -->
+        <div id="pantalla-resultado" class="pantalla">
+            <h2 style="color:#1e3a8a; margin-bottom:20px;">📋 Resultado Final</h2>
+            <div class="resultado-circulo" id="circuloResultado">
+                <span class="resultado-porcentaje" id="porcentajeResultado">0%</span>
+            </div>
+            <p class="resultado-detalle" id="detalleResultado">Aciertos: 0 / 20</p>
+            <div class="lista-resumen" id="listaResumen"></div>
+            <button class="btn" id="btnReiniciar">🔄 Reiniciar Práctica</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ===================== SEGURIDAD ANTI-INSPECCIÓN =====================
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            document.addEventListener('dragstart', e => e.preventDefault());
+            document.addEventListener('selectstart', e => e.preventDefault());
+            document.addEventListener('keydown', function(e) {
+                if (e.keyCode === 123) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 67) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+            });
+            // Detección básica de DevTools abierta
+            setInterval(function() {
+                const before = new Date();
+                debugger;
+                const after = new Date();
+                if (after - before > 150) {
+                    document.body.innerHTML =
+                        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui,sans-serif;text-align:center;background:#fef2f2;"><div><h1 style="color:#991b1b;">⚠️ Herramientas de inspección detectadas</h1><p style="color:#7f1d1d;">Por favor, cierra las DevTools y recarga la página para continuar con la práctica.</p></div></div>';
+                }
+            }, 1500);
+
+            // ===================== DATOS DEL CUESTIONARIO =====================
+            const preguntasOriginales = [{
+                enunciado: "Un desarrollador en Argentina finaliza un código fuente original pero no realiza ningún trámite administrativo. ¿Cuál es su situación legal inmediata según la Ley 11.723?",
+                opciones: [
+                    "Posee protección legal automática sobre la expresión del código desde su creación.",
+                    "Carece de derechos económicos hasta que concrete el registro formal en la DNDA.",
+                    "Pierde la capacidad de ejercer defensa jurídica ante casos de plagio o piratería.",
+                    "Requiere una aprobación estatal previa para asimilar su código a una obra literaria.",
+                    "Mantiene únicamente derechos morales pero no el control sobre la explotación comercial."
+                ],
+                correcta: 0,
+                justificacion: "Según las fuentes, en Argentina la protección del derecho de autor es <strong>automática</strong> desde el momento de la creación. Los distractores fallan al sugerir que se requiere un registro para obtener derechos económicos o capacidad de defensa, cuando el registro es solo una \"prueba irrefutable\", no la fuente del derecho."
+            }, {
+                enunciado: "Una empresa desarrolla un sistema de control de estabilidad para maquinaria pesada integrado en el hardware. ¿Qué marco de protección es el más adecuado?",
+                opciones: [
+                    "Solicitar una patente por tratarse de una solución técnica a un problema práctico.",
+                    "Aplicar el derecho de autor por ser un software puro basado en algoritmos lógicos.",
+                    "Registrar el código en la DNDA para obtener una protección por invención técnica.",
+                    "Utilizar únicamente contratos EULA para prohibir la ingeniería inversa del sistema.",
+                    "Implementar licencias Open Source para garantizar la estabilidad del firmware crítico."
+                ],
+                correcta: 0,
+                justificacion: "Las fuentes especifican que el software <strong>integrado a hardware físico</strong> (como frenado ABS o firmware industrial) es aplicable a <strong>patentes</strong> por ser una solución técnica. El software \"puro\" es el que se protege exclusivamente por derecho de autor."
+            }, {
+                enunciado: "Al instalar un software propietario en un servidor corporativo, ¿qué acción técnica y legal está realizando el profesional informático?",
+                opciones: [
+                    "Gestionando un permiso legal de uso bajo los términos definidos en la licencia.",
+                    "Adquiriendo la propiedad física del objeto digital para su libre redistribución.",
+                    "Validando la autoría intelectual del código frente a organismos de control estatal.",
+                    "Transfiriendo la responsabilidad ética del mantenimiento al proveedor del servicio.",
+                    "Ejecutando una compraventa de activos digitales para el patrimonio de la empresa."
+                ],
+                correcta: 0,
+                justificacion: "El \"Rol del Técnico\" indica que al instalar un programa no se manipula un objeto, sino que se gestiona un <strong>permiso legal (licencia)</strong> para utilizar una obra intelectual. El usuario no compra el software, adquiere una licencia."
+            }, {
+                enunciado: "Un cliente solicita la instalación de una versión \"crackeada\" de un software de diseño. Siguiendo el protocolo ético, ¿cuál es el primer paso a seguir?",
+                opciones: [
+                    "Explicar que un crack es una vulnerabilidad que permite el robo de datos críticos.",
+                    "Analizar si el cliente tiene la capacidad financiera para costear la suscripción.",
+                    "Migrar inmediatamente toda la infraestructura a herramientas de Código Abierto.",
+                    "Presentar el presupuesto de licencias comerciales adecuadas para su operación.",
+                    "Denunciar la solicitud ante las autoridades para proteger la propiedad intelectual."
+                ],
+                correcta: 0,
+                justificacion: "El paso 1 del \"Protocolo de Asesoramiento Ético\" es <strong>educar sobre el riesgo técnico</strong>, explicando que un crack es una \"puerta trasera\" para ciberataques."
+            }, {
+                enunciado: "En el contexto de la Ley 11.723, ¿cuál es la característica fundamental de los derechos morales del autor de un software?",
+                opciones: [
+                    "Representan un reconocimiento de la autoría que resulta totalmente irrenunciable.",
+                    "Permiten el control exclusivo sobre la duplicación y modificación comercial de la obra.",
+                    "Caducan automáticamente tras la primera venta de la licencia de uso al consumidor.",
+                    "Requieren el uso obligatorio del símbolo de Copyright para mantener su vigencia legal.",
+                    "Otorgan al programador el derecho a prohibir cualquier tipo de ingeniería inversa."
+                ],
+                correcta: 0,
+                justificacion: "La ley garantiza dos tipos de derechos: los <strong>morales</strong>, que son el reconocimiento irrenunciable de la autoría, y los económicos, que refieren a la explotación comercial."
+            }, {
+                enunciado: "¿Qué diferencia operativa fundamental distingue al Software Libre (Open Source) del Software Propietario?",
+                opciones: [
+                    "Concede libertades para estudiar el código fuente y distribuir copias modificadas.",
+                    "Requiere obligatoriamente un pago por soporte técnico para ser legalmente válido.",
+                    "Impide la implementación de cualquier tecnología DRM para el control de accesos.",
+                    "Garantiza que el software esté libre de vulnerabilidades mediante parches internos.",
+                    "Elimina la necesidad de realizar backups al basarse en infraestructuras de nube."
+                ],
+                correcta: 0,
+                justificacion: "La filosofía del Software Libre se basa en conceder libertades amplias: usar, estudiar el código, modificarlo y distribuir copias. El software propietario mantiene el código secreto."
+            }, {
+                enunciado: "Un técnico debe proteger un software industrial de alto costo que no debe arrancar sin autorización física. ¿Qué tecnología DRM es la indicada?",
+                opciones: [
+                    "Implementar llaves de hardware (dongles) para trasladar la licencia al mundo físico.",
+                    "Generar claves de producto alfanuméricas únicas asociadas a un límite de equipos.",
+                    "Utilizar sistemas de activación en línea que consulten los servidores de la matriz.",
+                    "Aplicar técnicas de ofuscación de código para bloquear intentos de crackers externos.",
+                    "Establecer contratos EULA estrictos que prohíban el uso en dispositivos múltiples."
+                ],
+                correcta: 0,
+                justificacion: "Los <strong>Dongles</strong> trasladan la licencia al mundo físico y el programa no arranca sin el dispositivo USB conectado, siendo común en software industrial de alto costo."
+            }, {
+                enunciado: "En la estrategia de mantenimiento continuo, ¿cuál es la prioridad absoluta para garantizar la supervivencia del sistema?",
+                opciones: [
+                    "Parchear vulnerabilidades de seguridad para evitar la inyección de código malicioso.",
+                    "Corregir errores de programación internos que causen cierres o corrupción de datos.",
+                    "Adaptar el software a los nuevos protocolos de red y versiones de sistemas operativos.",
+                    "Mejorar la interfaz de usuario para facilitar la gestión de los permisos de licencias.",
+                    "Optimizar el consumo de recursos de hardware para aumentar la estabilidad general."
+                ],
+                correcta: 0,
+                justificacion: "Las fuentes señalan la <strong>Seguridad</strong> como la \"Prioridad Absoluta\" en el mantenimiento, para evitar ataques de hackers o robo de datos."
+            }, {
+                enunciado: "Una organización posee un servidor de archivos y un NAS de red en el mismo centro de datos. ¿Qué pilar de la estrategia 3-2-1 está incumpliendo?",
+                opciones: [
+                    "Almacenar obligatoriamente una copia de los datos en una ubicación física externa.",
+                    "Mantener tres copias totales de la información crítica en soportes independientes.",
+                    "Utilizar dos tecnologías de almacenamiento distintas para evitar fallas simultáneas.",
+                    "Verificar la integridad de los archivos originales antes de realizar los respaldos.",
+                    "Implementar un sistema de cifrado anti-tamper para proteger las copias locales."
+                ],
+                correcta: 0,
+                justificacion: "La regla 3-2-1 exige <strong>1 copia externa (Offsite)</strong> fuera de la ubicación física principal para proteger contra incendios, robos o desastres locales."
+            }, {
+                enunciado: "¿Cuál es el valor jurídico del Registro y Depósito Legal del código fuente ante la DNDA en Argentina?",
+                opciones: [
+                    "Otorga una prueba jurídica irrefutable de autoría y fecha ante casos de plagio.",
+                    "Constituye el único mecanismo válido para transformar el software en obra literaria.",
+                    "Elimina la necesidad de utilizar contratos de licencia EULA con el usuario final.",
+                    "Garantiza que el software sea compatible con sistemas de Código Abierto y GPL.",
+                    "Permite que el autor retenga los derechos morales tras vender los derechos económicos."
+                ],
+                correcta: 0,
+                justificacion: "El registro ante un organismo estatal (DNDA) otorga <strong>prueba jurídica irrefutable</strong> de autoría y fecha, fundamental en la defensa jurídica."
+            }, {
+                enunciado: "Al proponer alternativas legales a un cliente sin presupuesto, ¿en qué debe convertirse el técnico profesional?",
+                opciones: [
+                    "Actuar como un arquitecto de soluciones que migra la infraestructura a Open Source.",
+                    "Ejercer como un mediador comercial para negociar descuentos en licencias EULA.",
+                    "Desempeñarse como un auditor de seguridad para detectar cracks en otros equipos.",
+                    "Funcionar como un representante legal que gestione el depósito en la DNDA.",
+                    "Operar como un consultor de hardware para reducir los costos de mantenimiento."
+                ],
+                correcta: 0,
+                justificacion: "El paso 3 del protocolo ético establece que el técnico debe actuar como <strong>arquitecto de soluciones</strong> y proponer herramientas de Código Abierto."
+            }, {
+                enunciado: "¿Cuál es el objetivo principal de utilizar técnicas de \"Cifrado y Anti-Tamper\" en el desarrollo de software?",
+                opciones: [
+                    "Bloquear a los crackers mediante la ofuscación del código y verificaciones de integridad.",
+                    "Facilitar la consulta silenciosa a los servidores de la matriz para validar licencias.",
+                    "Asegurar que el software sea gratuito y legal bajo licencias de tipo MIT o GPL.",
+                    "Permitir que el código fuente sea estudiado y modificado por cualquier usuario.",
+                    "Reducir la cantidad de copias totales requeridas por la estrategia de backup 3-2-1."
+                ],
+                correcta: 0,
+                justificacion: "El cifrado y anti-tamper buscan la <strong>ofuscación del código</strong> y bloquean a quienes intentan hacer ingeniería inversa."
+            }, {
+                enunciado: "Según los \"Mandamientos del Técnico Profesional\", ¿cuál es la consecuencia directa de instalar software ilegal?",
+                opciones: [
+                    "Transfiere la responsabilidad técnica y legal del acto directamente al profesional.",
+                    "Invalida automáticamente los derechos morales del autor original de la obra.",
+                    "Requiere la compra inmediata de una licencia por suscripción para evitar multas.",
+                    "Obliga al técnico a realizar tres copias de seguridad en soportes tecnológicos distintos.",
+                    "Elimina la posibilidad de utilizar el software en entornos de red o sistemas nube."
+                ],
+                correcta: 0,
+                justificacion: "Los mandamientos indican que la instalación de software ilegal <strong>transfiere la responsabilidad técnica y legal</strong> directamente al técnico."
+            }, {
+                enunciado: "¿Qué función cumple el uso del símbolo de Copyright (©) junto al año y el autor en un software?",
+                opciones: [
+                    "Eliminar la defensa legal de desconocimiento por parte de potenciales infractores.",
+                    "Reemplazar el trámite de registro formal ante la Dirección Nacional del Derecho de Autor.",
+                    "Habilitar la posibilidad de que el software sea patentado como una invención técnica.",
+                    "Convertir un software propietario en una obra de Código Abierto bajo licencias MIT.",
+                    "Garantizar que las actualizaciones de seguridad se realicen de forma automática."
+                ],
+                correcta: 0,
+                justificacion: "El símbolo de Copyright es una <strong>advertencia pública</strong> que disuade a infractores al eliminar la defensa legal de que \"no sabían\" que la obra estaba protegida."
+            }, {
+                enunciado: "En la matriz diagnóstica, ¿qué elemento se protege bajo el concepto de \"Derecho de Autor\"?",
+                opciones: [
+                    "El texto del código fuente y la forma original en la que ha sido escrito el programa.",
+                    "Una solución práctica a un problema técnico mediante la integración con hardware.",
+                    "El dispositivo físico de almacenamiento donde se encuentra guardado el ejecutable.",
+                    "El derecho exclusivo de los usuarios a realizar ingeniería inversa para estudio.",
+                    "La capacidad del sistema para actualizarse automáticamente desde la nube oficial."
+                ],
+                correcta: 0,
+                justificacion: "El derecho de autor protege <strong>cómo está escrito</strong> el código (el texto), mientras que las patentes protegen la invención o solución técnica."
+            }, {
+                enunciado: "Un técnico profesional considera que el mantenimiento es \"innegociable\". ¿Qué implica esto en su práctica diaria?",
+                opciones: [
+                    "Entender que las actualizaciones de seguridad son tareas críticas de ejecución urgente.",
+                    "Cobrar una tarifa fija por cada licencia de usuario gestionada en la red local.",
+                    "Realizar respaldos diarios únicamente en discos duros internos del servidor principal.",
+                    "Prohibir el uso de software de Código Abierto para garantizar la estabilidad del sistema.",
+                    "Registrar cada modificación del código fuente ante la DNDA para evitar el plagio."
+                ],
+                correcta: 0,
+                justificacion: "El mantenimiento innegociable se refiere a que las <strong>actualizaciones de seguridad son críticas y urgentes</strong> para la supervivencia del sistema."
+            }, {
+                enunciado: "¿Cuál es el propósito de la \"Activación en Línea\" como tecnología de control de accesos?",
+                opciones: [
+                    "Garantizar que una misma clave de producto no se encuentre clonada en varios equipos.",
+                    "Permitir que el autor retenga el código fuente en secreto bajo una licencia MIT.",
+                    "Facilitar la migración de datos hacia una ubicación externa según la regla 3-2-1.",
+                    "Otorgar al usuario final la propiedad intelectual sobre las modificaciones realizadas.",
+                    "Verificar que el técnico haya cumplido con el protocolo de asesoramiento ético."
+                ],
+                correcta: 0,
+                justificacion: "La activación en línea consulta a los servidores para evitar que una <strong>clave esté clonada</strong> en múltiples dispositivos."
+            }, {
+                enunciado: "En el \"Ciclo Completo de Protección del Software\", ¿qué fase sigue inmediatamente a la Creación?",
+                opciones: [
+                    "La protección automática del derecho de autor establecida por la normativa legal.",
+                    "El registro formal ante organismos gubernamentales para obtener prueba jurídica.",
+                    "La distribución masiva del software mediante licencias EULA y tecnologías DRM.",
+                    "El uso responsable por parte del técnico mediante actualizaciones y backups.",
+                    "La defensa jurídica contra la piratería apoyada en los símbolos de advertencia."
+                ],
+                correcta: 0,
+                justificacion: "En la síntesis del ciclo, tras la <strong>Creación</strong> (paso 1), nace la <strong>Protección Automática</strong> (paso 2) por derecho de autor."
+            }, {
+                enunciado: "Un software presenta cierres inesperados y corrupción de archivos, pero no ha sido atacado. ¿Qué pilar operativo debe atenderse?",
+                opciones: [
+                    "El mantenimiento de estabilidad para corregir errores de programación internos.",
+                    "La implementación de tecnologías DRM para evitar la ingeniería inversa externa.",
+                    "La ejecución de la regla 3-2-1 para recuperar la información desde la nube.",
+                    "El asesoramiento ético para convencer al cliente de comprar nuevas licencias.",
+                    "La actualización de compatibilidad para adaptar el código a nuevos protocolos."
+                ],
+                correcta: 0,
+                justificacion: "La <strong>estabilidad</strong> se encarga de corregir bugs (errores de programación) que causan cierres o corrupción, diferenciándose de la seguridad o compatibilidad."
+            }, {
+                enunciado: "¿Qué comprende el control exclusivo de los \"Derechos Económicos\" según la perspectiva técnica y legal?",
+                opciones: [
+                    "El poder de autorizar o prohibir la explotación comercial y la modificación de la obra.",
+                    "La potestad de exigir el reconocimiento de la autoría de forma perpetua y global.",
+                    "La obligación de registrar el código fuente en la DNDA antes de cualquier venta.",
+                    "El derecho a recibir soporte técnico gratuito por parte de la empresa desarrolladora.",
+                    "La facultad de transformar un software propietario en uno libre sin previo aviso."
+                ],
+                correcta: 0,
+                justificacion: "Los derechos económicos otorgan el <strong>control exclusivo</strong> sobre la explotación comercial, duplicación y modificación de la obra."
+            }];
+
+            // ===================== ESTADO DE LA APLICACIÓN =====================
+            let preguntas = [];
+            let indiceActual = 0;
+            let respuestasUsuario = []; // null = no respondida, number = índice seleccionado
+            let pantallaActual = 'bienvenida'; // 'bienvenida' | 'quiz' | 'resultado'
+
+            // ===================== ELEMENTOS DOM =====================
+            const pantallaBienvenida = document.getElementById('pantalla-bienvenida');
+            const pantallaQuiz = document.getElementById('pantalla-quiz');
+            const pantallaResultado = document.getElementById('pantalla-resultado');
+            const contenedorPregunta = document.getElementById('contenedor-pregunta');
+            const contenedorFeedback = document.getElementById('contenedor-feedback');
+            const btnAnterior = document.getElementById('btnAnterior');
+            const btnSiguiente = document.getElementById('btnSiguiente');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const btnComenzar = document.getElementById('btnComenzar');
+            const btnReiniciar = document.getElementById('btnReiniciar');
+            const listaResumen = document.getElementById('listaResumen');
+            const porcentajeResultado = document.getElementById('porcentajeResultado');
+            const detalleResultado = document.getElementById('detalleResultado');
+            const circuloResultado = document.getElementById('circuloResultado');
+
+            // ===================== FUNCIONES DE ALEATORIEDAD =====================
+            function shuffleArray(arr) {
+                const a = arr.slice();
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            function inicializarPreguntas() {
+                // Barajar preguntas
+                const ordenPreguntas = shuffleArray(preguntasOriginales.map((_, i) => i));
+                preguntas = ordenPreguntas.map(i => {
+                    const original = preguntasOriginales[i];
+                    // Crear opciones barajadas con marcador de correcta
+                    const opcionesConIndice = original.opciones.map((texto, idx) => ({
+                        texto: texto,
+                        esCorrecta: idx === original.correcta
+                    }));
+                    const opcionesBarajadas = shuffleArray(opcionesConIndice);
+                    const indiceCorrectoBarajado = opcionesBarajadas.findIndex(op => op
+                        .esCorrecta);
+                    return {
+                        idOriginal: i,
+                        enunciado: original.enunciado,
+                        opciones: opcionesBarajadas.map(op => op.texto),
+                        indiceCorrecto: indiceCorrectoBarajado,
+                        justificacion: original.justificacion
+                    };
+                });
+                respuestasUsuario = new Array(preguntas.length).fill(null);
+                indiceActual = 0;
+            }
+
+            // ===================== NAVEGACIÓN Y PANTALLAS =====================
+            function cambiarPantalla(nombre) {
+                pantallaBienvenida.classList.remove('activa');
+                pantallaQuiz.classList.remove('activa');
+                pantallaResultado.classList.remove('activa');
+                if (nombre === 'bienvenida') {
+                    pantallaBienvenida.classList.add('activa');
+                } else if (nombre === 'quiz') {
+                    pantallaQuiz.classList.add('activa');
+                } else if (nombre === 'resultado') {
+                    pantallaResultado.classList.add('activa');
+                }
+                pantallaActual = nombre;
+            }
+
+            function actualizarProgreso() {
+                const respondidas = respuestasUsuario.filter(r => r !== null).length;
+                const total = preguntas.length;
+                const porcentaje = total > 0 ? Math.round((respondidas / total) * 100) : 0;
+                progressBar.style.width = porcentaje + '%';
+                progressText.textContent = respondidas + ' / ' + total + ' respondidas';
+            }
+
+            function renderizarPregunta() {
+                if (preguntas.length === 0) return;
+                const pregunta = preguntas[indiceActual];
+                const letras = ['A', 'B', 'C', 'D', 'E'];
+                const respuestaSeleccionada = respuestasUsuario[indiceActual];
+                const bloqueada = respuestaSeleccionada !== null;
+
+                let html = `
+                    <div class="pregunta-header">
+                        <span class="pregunta-numero">Pregunta ${indiceActual + 1} de ${preguntas.length}</span>
+                    </div>
+                    <p class="pregunta-enunciado">${pregunta.enunciado}</p>
+                    <div class="opciones" id="opcionesContainer">
+                `;
+
+                pregunta.opciones.forEach((opcionTexto, idx) => {
+                    let claseOpcion = 'opcion';
+                    if (bloqueada) {
+                        claseOpcion += ' bloqueada';
+                        if (idx === pregunta.indiceCorrecto) {
+                            claseOpcion += ' correcta';
+                        } else if (idx === respuestaSeleccionada && idx !== pregunta.indiceCorrecto) {
+                            claseOpcion += ' incorrecta';
+                        }
+                        // Si el usuario falló, resaltar la correcta con borde punteado
+                        if (respuestaSeleccionada !== pregunta.indiceCorrecto && idx === pregunta
+                            .indiceCorrecto && respuestaSeleccionada !== null) {
+                            claseOpcion += ' revelada-correcta';
+                        }
+                    }
+                    html += `
+                        <div class="${claseOpcion}" data-indice="${idx}">
+                            <span class="letra">${letras[idx]}</span>
+                            <span class="texto">${opcionTexto}</span>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                contenedorPregunta.innerHTML = html;
+
+                // Agregar event listeners a las opciones no bloqueadas
+                if (!bloqueada) {
+                    const opcionesDivs = contenedorPregunta.querySelectorAll('.opcion');
+                    opcionesDivs.forEach(opcionDiv => {
+                        opcionDiv.addEventListener('click', function() {
+                            const idx = parseInt(this.getAttribute('data-indice'));
+                            seleccionarRespuesta(idx);
+                        });
+                    });
+                }
+
+                // Feedback
+                let feedbackHTML = '';
+                if (bloqueada) {
+                    const esCorrecta = respuestaSeleccionada === pregunta.indiceCorrecto;
+                    if (esCorrecta) {
+                        feedbackHTML = `
+                            <div class="feedback correcto">
+                                <span class="titulo-feedback">✅ ¡Correcto!</span>
+                                <span class="justificacion">${pregunta.justificacion}</span>
+                            </div>`;
+                    } else {
+                        const textoCorrecto = pregunta.opciones[pregunta.indiceCorrecto];
+                        feedbackHTML = `
+                            <div class="feedback incorrecto">
+                                <span class="titulo-feedback">❌ Incorrecto. La respuesta correcta es: "${textoCorrecto}"</span>
+                                <span class="justificacion">${pregunta.justificacion}</span>
+                            </div>`;
+                    }
+                }
+                contenedorFeedback.innerHTML = feedbackHTML;
+
+                // Botones de navegación
+                btnAnterior.style.display = indiceActual === 0 ? 'none' : 'inline-flex';
+                if (indiceActual === preguntas.length - 1) {
+                    btnSiguiente.textContent = '🏁 Finalizar';
+                    btnSiguiente.onclick = finalizarPractica;
+                } else {
+                    btnSiguiente.textContent = 'Siguiente ➡';
+                    btnSiguiente.onclick = avanzarPregunta;
+                }
+                btnAnterior.onclick = retrocederPregunta;
+
+                actualizarProgreso();
+            }
+
+            function seleccionarRespuesta(indiceSeleccionado) {
+                if (respuestasUsuario[indiceActual] !== null) return; // ya respondida
+                respuestasUsuario[indiceActual] = indiceSeleccionado;
+                renderizarPregunta();
+            }
+
+            function avanzarPregunta() {
+                if (indiceActual < preguntas.length - 1) {
+                    indiceActual++;
+                    renderizarPregunta();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            function retrocederPregunta() {
+                if (indiceActual > 0) {
+                    indiceActual--;
+                    renderizarPregunta();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            function finalizarPractica() {
+                // Mostrar pantalla de resultados
+                const total = preguntas.length;
+                let aciertos = 0;
+                respuestasUsuario.forEach((resp, idx) => {
+                    if (resp === preguntas[idx].indiceCorrecto) aciertos++;
+                });
+                const porcentaje = total > 0 ? Math.round((aciertos / total) * 100) : 0;
+
+                // Actualizar UI de resultados
+                porcentajeResultado.textContent = porcentaje + '%';
+                detalleResultado.textContent = 'Aciertos: ' + aciertos + ' / ' + total;
+
+                // Círculo de progreso
+                const grados = (aciertos / total) * 360;
+                circuloResultado.style.background = `conic-gradient(#1a56db 0deg ${grados}deg, #e2e8f0 ${grados}deg 360deg)`;
+
+                // Lista de ítems por pregunta
+                let htmlLista = '';
+                for (let i = 0; i < total; i++) {
+                    let clase = 'item-resumen';
+                    let simbolo = '⬜';
+                    if (respuestasUsuario[i] === null) {
+                        clase += ' sin-responder';
+                        simbolo = '—';
+                    } else if (respuestasUsuario[i] === preguntas[i].indiceCorrecto) {
+                        clase += ' acierto';
+                        simbolo = '✓';
+                    } else {
+                        clase += ' fallo';
+                        simbolo = '✗';
+                    }
+                    htmlLista +=
+                        `<span class="${clase}" title="Pregunta ${i+1}: ${simbolo === '✓' ? 'Correcta' : (simbolo === '✗' ? 'Incorrecta' : 'Sin responder')}">${i+1}</span>`;
+                }
+                listaResumen.innerHTML = htmlLista;
+
+                cambiarPantalla('resultado');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function reiniciarTodo() {
+                inicializarPreguntas();
+                indiceActual = 0;
+                cambiarPantalla('quiz');
+                renderizarPregunta();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // ===================== EVENT LISTENERS INICIALES =====================
+            btnComenzar.addEventListener('click', function() {
+                inicializarPreguntas();
+                indiceActual = 0;
+                cambiarPantalla('quiz');
+                renderizarPregunta();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            btnReiniciar.addEventListener('click', reiniciarTodo);
+
+            // Iniciar en pantalla de bienvenida
+            cambiarPantalla('bienvenida');
+            actualizarProgreso();
+
+            console.log('%c⚠️ Cuestionario de Práctica Profesional %c| %cHerramientas de inspección deshabilitadas por motivos pedagógicos.',
+                'font-weight:bold;color:#1a56db;', '', 'color:#c81e1e;');
+        })();
+    </script>
+</body>
+</html>
